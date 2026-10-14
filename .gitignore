@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 探测/临时文件
+_probe*.html
+_probe_out.txt
+*.zip

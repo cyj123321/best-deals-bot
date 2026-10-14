@@ -1,0 +1,44 @@
+name: Daily Deals Bot
+
+on:
+  schedule:
+    # GitHub Actions 的 cron 用 UTC，不是本地时间，也不是注释里写的 IST。
+    # 03:30 UTC = 印度时间 09:00 = 北京时间 11:30
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+# 必需：GitHub 已把默认 GITHUB_TOKEN 收紧为只读，
+# 缺这一段的话下面的 git push 会被直接拒绝。
+permissions:
+  contents: write
+
+jobs:
+  update-deals:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run deal script
+        run: python bot.py
+
+      - name: Commit and push updated index.html
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add index.html
+          if git diff --staged --quiet; then
+            echo "index.html 没有变化，跳过提交"
+          else
+            git commit -m "Daily update [bot]"
+            git push
+          fi
